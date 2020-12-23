@@ -1,3 +1,14 @@
+~
+
+/config.conf
+Files/
+Database/
+**__pycache__*
+.DS_Store
+**__init__*
+**.ipynb*
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
