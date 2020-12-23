@@ -11,14 +11,14 @@ import sqlite3
 
 
 database_name = 'Algotrade_DB.db'
-database = '/Users/kevinbichoupan/Algotrade/Files/' + database_name
+database = '/Users/kevinbichoupan/projects/Algotrade/Files/' + database_name
 conn = sqlite3.connect(database)
 c = conn.cursor()
 print('Connection to Database Successful')
 
 
-sql_create_equity_history_daily_table = """
-CREATE TABLE IF NOT EXISTS equity_history_daily (
+createEquityHistoryDailyRaw = """
+CREATE TABLE IF NOT EXISTS equity_history_daily_raw (
 	symbol TEXT
 	,date TEXT
 	,close REAL
@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS equity_history_daily (
 	,PRIMARY KEY (symbol, date)
 );"""
 
-c.execute(sql_create_equity_history_daily_table)
+c.execute(createEquityHistoryDailyRaw)
 print('Successfuly created table equity_history_daily')
+
+c.close()
 

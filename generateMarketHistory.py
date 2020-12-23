@@ -31,7 +31,7 @@ def insertEquityHistory(dataframe):
 	conn = sqlite3.connect(database)
 	c = conn.cursor()
 
-	df.to_sql(name = 'equity_history', con = conn, if_exists='append',index=False)
+	df.to_sql(name = 'equity_history_daily', con = conn, if_exists='append',index=False)
 	c.commit()
 	conn.close()
 
@@ -44,9 +44,11 @@ if __name__ == '__main__':
 	symbol = 'MSFT'
 	x = pullEquityHistory(symbol)
 	print('\n\n\nEquity History Data Pulled for ' + symbol +'\n\n\n')
-	
-	insertEquityHistory(x)
-	print('Equity History Successfully Written to Algotrade_DB.equity_history_daily\n\n\n')
+	print(x.head())	
+
+
+	#insertEquityHistory(x)
+	#print('Equity History Successfully Written to Algotrade_DB.equity_history_daily\n\n\n')
 
 
 
