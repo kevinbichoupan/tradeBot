@@ -10,8 +10,8 @@ import sqlite3
 
 
 
-database_name = 'Algotrade_DB.db'
-database = '/Users/kevinbichoupan/projects/Algotrade/Files/' + database_name
+database_name = 'tradeBot_DW.db'
+database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
 conn = sqlite3.connect(database)
 c = conn.cursor()
 print('Connection to Database Successful')

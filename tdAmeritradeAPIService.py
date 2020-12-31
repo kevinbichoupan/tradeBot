@@ -16,7 +16,7 @@ import json
 # assign alpha vantage key for access
 
 config = configparser.ConfigParser()
-config.read('/Users/kevinbichoupan/Algotrade/config.conf')
+config.read('/Users/kevinbichoupan/projects/tradeBot/config.conf')
 TDAmeritradeConfigs = dict(config.items('TD Ameritrade API'))
 
 
@@ -82,16 +82,16 @@ class TDAPIService():
 
 
 
-	def getPriceHistory(self, symbol: str):
+	def getPriceHistory(self, symbol: str, startDate: int, endDate: int):
 
 		symbol = symbol.upper()
-		getRequestUrl = "https://api.tdameritrade.com/v1/marketdata/" + symbol + "/pricehistory?periodType=year&period=1&frequencyType=daily&frequency=1&apikey=" + self.TDAPIKey
-		response = requests.get(getRequestUrl)
+		getRequestURL = "https://api.tdameritrade.com/v1/marketdata/" + symbol + "/pricehistory?apikey=" + self.TDAPIKey + "&startDate=" + startDate + "&endDate=" + endDate  + "&periodType=day&frequencyType=daily&frequency=1"
+		response = requests.get(getRequestURL)
 
 		try:
 			response.raise_for_status()
 		except requests.exceptions.HTTPError as e:
-			return "Unsuccessful API Call - getPriceHistory | Error: " + str(e)
+			print( "Unsuccessful API Call - getPriceHistory | Error: " + str(e))
 
 		return json.loads(response.text)
 

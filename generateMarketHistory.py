@@ -2,16 +2,61 @@
 Create Market History Data Script
 """
 
-from td_ameritrade_api_service import *
+from tdAmeritradeAPIService import *
 import pandas as pd
 import datetime
 import sqlite3
+from dateutil.relativedelta import *
 
 
-def pullEquityHistory(symbol: str):
+
+def generateDateRangesForEquityHistoryPull(symbol):
+
+	database_name = 'tradeBot_DW.db'
+	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
+	conn = sqlite3.connect(database)
+	c = conn.cursor()	
+	query = "select max(date) from equity_history_daily_raw where symbol = '" + symbol + "';"
+	x = c.execute(query).fetchall()
+	conn.close()
+
+	try:
+		a = x[0][0]
+	except:
+		a = x
+
+	dateRanges = []
+	minHistoryDate = datetime.datetime(2018,1,1,0,0)
+	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1)
+	epoch = datetime.datetime.utcfromtimestamp(0)
+
+	if not a:
+		monthsGap = (maxHistoryDate.year - minHistoryDate.year) * 12 + (maxHistoryDate.month - minHistoryDate.month)
+		
+		for i in range(0, monthsGap):
+			startTimestampTmp = round(((minHistoryDate + relativedelta(months=i)) - epoch).total_seconds() * 1000)
+			endTimestampTmp = round(((maxHistoryDate + relativedelta(months=i+1) - datetime.timedelta(days=1)) - epoch).total_seconds() * 1000)
+			dateRanges.append((startTimestampTmp, endTimestampTmp))
+		
+		startTimestampTmp = round(((minHistoryDate + relativedelta(months = monthsGap)) - epoch).total_seconds() * 1000)
+		endTimestampTmp = round((maxHistoryDate - epoch).total_seconds() * 1000)	
+		dateRanges.append((startTimestampTmp, endTimestampTmp))
+		
+		return dateRanges
+	else:
+
+	#TODO: add case when there is already history loaded
+
+		return dateRanges
+				
+
+
+
+
+def pullEquityHistory(symbol: str, startDate, endDate):
 	
 	TDAPI = TDAPIService()
-	x = TDAPI.getPriceHistory(symbol)
+	x = TDAPI.getPriceHistory(symbol, startDate, endDate)
 	
 	data1 = pd.DataFrame(x['candles'])
 	data1['symbol'] = x['symbol']
@@ -19,20 +64,23 @@ def pullEquityHistory(symbol: str):
 
 	data1 = data1.drop(columns = ['datetime'])
 
-
 	return data1
 
 
-def insertEquityHistory(dataframe):
-	df = dataframe
 
-	database_name = 'Algotrade_DB.db'
-	database = '/Users/kevinbichoupan/Algotrade/Files/' + database_name
+def insertEquityHistory(symbol):
+	
+	dateRanges = generateDateRangesForEquityHistoryPull(symbol)	
+	
+	database_name = 'tradeBot_DW.db'
+	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
 	conn = sqlite3.connect(database)
-	c = conn.cursor()
+	
+	for i in dateRanges:
+		dataHistorySlice = pullEquityHistory(symbol, str(i[0]), str(i[1]))
+		print(i)
+		dataHistorySlice.to_sql('equity_history_daily_raw', conn, if_exists = 'append', index = False)
 
-	df.to_sql(name = 'equity_history_daily', con = conn, if_exists='append',index=False)
-	c.commit()
 	conn.close()
 
 
@@ -40,15 +88,16 @@ def insertEquityHistory(dataframe):
 
 
 
+
+
+
+
 if __name__ == '__main__':
+
 	symbol = 'MSFT'
-	x = pullEquityHistory(symbol)
-	print('\n\n\nEquity History Data Pulled for ' + symbol +'\n\n\n')
-	print(x.head())	
+	insertEquityHistory(symbol)
 
 
-	#insertEquityHistory(x)
-	#print('Equity History Successfully Written to Algotrade_DB.equity_history_daily\n\n\n')
 
 
 
