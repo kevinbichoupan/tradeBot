@@ -7,6 +7,9 @@ import pandas as pd
 import datetime
 import sqlite3
 from dateutil.relativedelta import *
+import sys
+
+
 
 
 
@@ -24,31 +27,38 @@ def generateDateRangesForEquityHistoryPull(symbol):
 		a = x[0][0]
 	except:
 		a = x
-
+	
 	dateRanges = []
-	minHistoryDate = datetime.datetime(2018,1,1,0,0)
+	
 	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1)
 	epoch = datetime.datetime.utcfromtimestamp(0)
 
-	if not a:
-		monthsGap = (maxHistoryDate.year - minHistoryDate.year) * 12 + (maxHistoryDate.month - minHistoryDate.month)
-		
-		for i in range(0, monthsGap):
-			startTimestampTmp = round(((minHistoryDate + relativedelta(months=i)) - epoch).total_seconds() * 1000)
-			endTimestampTmp = round(((maxHistoryDate + relativedelta(months=i+1) - datetime.timedelta(days=1)) - epoch).total_seconds() * 1000)
-			dateRanges.append((startTimestampTmp, endTimestampTmp))
-		
-		startTimestampTmp = round(((minHistoryDate + relativedelta(months = monthsGap)) - epoch).total_seconds() * 1000)
-		endTimestampTmp = round((maxHistoryDate - epoch).total_seconds() * 1000)	
+	if a == maxHistoryDate.strftime('%Y-%m-%d'):	# RETURN NULL DATERANGES
+		return dateRanges
+
+	elif not a:	#PERFORM FULL HISTORY GENERATION 
+		minHistoryDate = datetime.datetime(2018,1,1,0,0)
+	
+	else:	#PERFORM PARTIAL HISTORY GENERATION
+		minHistoryDate = datetime.datetime(int(a[0:4]), int(a[5:7]), int(a[8:11]))
+
+
+	monthsGap = (maxHistoryDate.year - minHistoryDate.year) * 12 + (maxHistoryDate.month - minHistoryDate.month)
+	
+	for i in range(0, monthsGap):
+		startTimestampTmp = round(((minHistoryDate + relativedelta(months=i)) - epoch).total_seconds() * 1000)
+		endTimestampTmp = round(((minHistoryDate + relativedelta(months=i+1) - datetime.timedelta(days=1)) - epoch).total_seconds() * 1000)
 		dateRanges.append((startTimestampTmp, endTimestampTmp))
-		
-		return dateRanges
-	else:
+	
+	startTimestampTmp = round(((minHistoryDate + relativedelta(months = monthsGap)) - epoch).total_seconds() * 1000)
+	endTimestampTmp = round((maxHistoryDate - epoch).total_seconds() * 1000)	
+	dateRanges.append((startTimestampTmp, endTimestampTmp))
+	
+	return dateRanges
 
-	#TODO: add case when there is already history loaded
 
-		return dateRanges
-				
+
+
 
 
 
@@ -68,9 +78,17 @@ def pullEquityHistory(symbol: str, startDate, endDate):
 
 
 
+
+
+
+
 def insertEquityHistory(symbol):
 	
 	dateRanges = generateDateRangesForEquityHistoryPull(symbol)	
+
+	if not dateRanges:
+		print('History for ' + symbol + ' is up to date')
+		return
 	
 	database_name = 'tradeBot_DW.db'
 	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
@@ -80,7 +98,7 @@ def insertEquityHistory(symbol):
 		dataHistorySlice = pullEquityHistory(symbol, str(i[0]), str(i[1]))
 		print(i)
 		dataHistorySlice.to_sql('equity_history_daily_raw', conn, if_exists = 'append', index = False)
-
+		print('Successfully inserted data for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
 	conn.close()
 
 
@@ -93,11 +111,7 @@ def insertEquityHistory(symbol):
 
 
 if __name__ == '__main__':
-
-	symbol = 'MSFT'
-	insertEquityHistory(symbol)
-
-
+	insertEquityHistory(str(sys.argv[1]))
 
 
 

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS equity_history_daily_raw (
 );"""
 
 c.execute(createEquityHistoryDailyRaw)
-print('Successfuly created table equity_history_daily')
+print('Successfuly created table equity_history_daily_raw')
 
 c.close()
 

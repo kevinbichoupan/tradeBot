@@ -83,9 +83,8 @@ class TDAPIService():
 
 
 	def getPriceHistory(self, symbol: str, startDate: int, endDate: int):
-
 		symbol = symbol.upper()
-		getRequestURL = "https://api.tdameritrade.com/v1/marketdata/" + symbol + "/pricehistory?apikey=" + self.TDAPIKey + "&startDate=" + startDate + "&endDate=" + endDate  + "&periodType=day&frequencyType=daily&frequency=1"
+		getRequestURL = "https://api.tdameritrade.com/v1/marketdata/" + symbol + "/pricehistory?apikey=" + self.TDAPIKey + "&startDate=" + startDate + "&endDate=" + endDate  + "&periodType=month&frequencyType=daily&frequency=1"
 		response = requests.get(getRequestURL)
 
 		try:
