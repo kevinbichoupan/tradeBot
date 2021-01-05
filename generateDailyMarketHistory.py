@@ -30,18 +30,20 @@ def generateDateRangesForEquityHistoryPull(symbol):
 	
 	dateRanges = []
 	
-	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1)
+	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1) + datetime.timedelta(hours=5)
 	epoch = datetime.datetime.utcfromtimestamp(0)
-
+	
 	if a == maxHistoryDate.strftime('%Y-%m-%d'):	# RETURN NULL DATERANGES
+		print('History is up to date')
 		return dateRanges
 
 	elif not a:	#PERFORM FULL HISTORY GENERATION 
-		minHistoryDate = datetime.datetime(2018,1,1,0,0)
+		print('Performing Full History Generation')
+		minHistoryDate = datetime.datetime(2018,1,1,0,0) + datetime.timedelta(hours=5)
 	
 	else:	#PERFORM PARTIAL HISTORY GENERATION
-		minHistoryDate = datetime.datetime(int(a[0:4]), int(a[5:7]), int(a[8:11]))
-
+		print('Performing Partial History Generation')
+		minHistoryDate = datetime.datetime(int(a[0:4]), int(a[5:7]), int(a[8:11])) + datetime.timedelta(days=1) + datetime.timedelta(hours=5)
 
 	monthsGap = (maxHistoryDate.year - minHistoryDate.year) * 12 + (maxHistoryDate.month - minHistoryDate.month)
 	
@@ -67,14 +69,15 @@ def pullEquityHistory(symbol: str, startDate, endDate):
 	
 	TDAPI = TDAPIService()
 	x = TDAPI.getPriceHistory(symbol, startDate, endDate)
-	
-	data1 = pd.DataFrame(x['candles'])
-	data1['symbol'] = x['symbol']
-	data1['date'] = data1['datetime'].apply(lambda x: datetime.datetime.fromtimestamp(x/1000).strftime('%Y-%m-%d'))
+	try:	
+		data1 = pd.DataFrame(x['candles'])
+		data1['symbol'] = x['symbol']
+		data1['date'] = data1['datetime'].apply(lambda x: datetime.datetime.fromtimestamp(x/1000).strftime('%Y-%m-%d'))
 
-	data1 = data1.drop(columns = ['datetime'])
-
-	return data1
+		data1 = data1.drop(columns = ['datetime'])
+		return data1
+	except:
+		return None
 
 
 
@@ -96,9 +99,12 @@ def insertEquityHistory(symbol):
 	
 	for i in dateRanges:
 		dataHistorySlice = pullEquityHistory(symbol, str(i[0]), str(i[1]))
-		print(i)
-		dataHistorySlice.to_sql('equity_history_daily_raw', conn, if_exists = 'append', index = False)
-		print('Successfully inserted data for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
+		try:
+			dataHistorySlice.to_sql('equity_history_daily_raw', conn, if_exists = 'append', index = False)
+			print('Successfully inserted data for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
+		except:
+			print('No data inserted for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
+
 	conn.close()
 
 
@@ -111,7 +117,9 @@ def insertEquityHistory(symbol):
 
 
 if __name__ == '__main__':
+	print('\n\n\n')
 	insertEquityHistory(str(sys.argv[1]))
+	print('\n\n\n')
 
 
 
