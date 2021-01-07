@@ -30,7 +30,7 @@ def generateDateRangesForEquityHistoryPull(symbol):
 	
 	dateRanges = []
 	
-	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1) + datetime.timedelta(hours=5)
+	maxHistoryDate = datetime.datetime.today() - datetime.timedelta(days=1)
 	epoch = datetime.datetime.utcfromtimestamp(0)
 	
 	if a == maxHistoryDate.strftime('%Y-%m-%d'):	# RETURN NULL DATERANGES
