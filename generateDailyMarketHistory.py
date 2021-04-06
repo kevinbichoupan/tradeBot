@@ -1,5 +1,5 @@
 """
-Create Market History Data Script
+Generate Daily Market History Data Script
 """
 
 from tdAmeritradeAPIService import *
@@ -39,7 +39,7 @@ def generateDateRangesForEquityHistoryPull(symbol):
 
 	elif not a:	#PERFORM FULL HISTORY GENERATION 
 		print('Performing Full History Generation')
-		minHistoryDate = datetime.datetime(2018,1,1,0,0) + datetime.timedelta(hours=5)
+		minHistoryDate = datetime.datetime(2010,1,1,0,0) + datetime.timedelta(hours=5)
 	
 	else:	#PERFORM PARTIAL HISTORY GENERATION
 		print('Performing Partial History Generation')
