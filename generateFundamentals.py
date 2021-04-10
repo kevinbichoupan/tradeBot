@@ -82,8 +82,6 @@ def insertCurrentFundamentalData(symbol:str):
 
 
 if __name__ == '__main__':
-	#pullFundamentals('MSFT')
-	#print(checkIfFundamentalsExists('MSFT', datetime.datetime.today().strftime('%Y-%m`-%d')))
 	print('\n\n\n')
 	insertCurrentFundamentalData(str(sys.argv[1]))
 	print('\n\n\n')	

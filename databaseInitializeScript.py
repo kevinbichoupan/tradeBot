@@ -1,6 +1,6 @@
 """
 
-Trading Algorith - Database Initialize Script
+Database Initialize Script
 
 """
 
