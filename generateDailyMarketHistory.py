@@ -13,13 +13,11 @@ import sys
 
 
 
-def generateDateRangesForEquityHistoryPull(symbol):
+def generateDateRangesForEquityHistoryPull(symbol, databaseInfo):
 
-	database_name = 'tradeBot_DW.db'
-	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
-	conn = sqlite3.connect(database)
+	conn = sqlite3.connect(databaseInfo['database_location'])
 	c = conn.cursor()	
-	query = "select max(date) from equity_history_daily_raw where symbol = '" + symbol + "';"
+	query = "select max(date) from " + databaseInfo['historical_table'] + "  where symbol = '" + symbol + "';"
 	x = c.execute(query).fetchall()
 	conn.close()
 
@@ -39,7 +37,7 @@ def generateDateRangesForEquityHistoryPull(symbol):
 
 	elif not a:	#PERFORM FULL HISTORY GENERATION 
 		print('Performing Full History Generation')
-		minHistoryDate = datetime.datetime(2010,1,1,0,0) + datetime.timedelta(hours=5)
+		minHistoryDate = datetime.datetime(2020,1,1,0,0) + datetime.timedelta(hours=5)
 	
 	else:	#PERFORM PARTIAL HISTORY GENERATION
 		print('Performing Partial History Generation')
@@ -85,22 +83,20 @@ def pullEquityHistory(symbol: str, startDate, endDate):
 
 
 
-def insertEquityHistory(symbol):
+def insertEquityHistory(symbol, databaseInfo):
 	
-	dateRanges = generateDateRangesForEquityHistoryPull(symbol)	
+	dateRanges = generateDateRangesForEquityHistoryPull(symbol, databaseInfo)	
 
 	if not dateRanges:
 		print('History for ' + symbol + ' is up to date')
 		return
 	
-	database_name = 'tradeBot_DW.db'
-	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
-	conn = sqlite3.connect(database)
+	conn = sqlite3.connect(databaseInfo['database_location'])
 	
 	for i in dateRanges:
 		dataHistorySlice = pullEquityHistory(symbol, str(i[0]), str(i[1]))
 		try:
-			dataHistorySlice.to_sql('equity_history_daily_raw', conn, if_exists = 'append', index = False)
+			dataHistorySlice.to_sql(databaseInfo['historical_table'], conn, if_exists = 'append', index = False)
 			print('Successfully inserted data for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
 		except:
 			print('No data inserted for ' + symbol + ' for date ranges ' + str(i[0]) + ' to ' + str(i[1]))
@@ -118,7 +114,7 @@ def insertEquityHistory(symbol):
 
 if __name__ == '__main__':
 	print('\n\n\n')
-	insertEquityHistory(str(sys.argv[1]))
+	insertEquityHistory(str(sys.argv[1]), sys.argv[2])
 	print('\n\n\n')
 
 

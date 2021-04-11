@@ -35,13 +35,11 @@ def pullFundamentals(symbol: str):
 		
 
 
-def checkIfFundamentalsExists(symbol:str):
+def checkIfFundamentalsExists(symbol:str, databaseInfo):
 	
-	database_name = 'tradeBot_DW.db'
-	database = '/Users/kevinbichoupan/projects/tradeBot/Files/' + database_name
-	conn = sqlite3.connect(database)
+	conn = sqlite3.connect(databaseInfo['database_location'])
 	c = conn.cursor()
-	query = "select max(date) from fundamental_data_raw where symbol  = '" + symbol + "';"
+	query = "select max(date) from " + databaseInfo['fundamental_table'] + " where symbol  = '" + symbol + "';"
 	x = c.execute(query).fetchall()
 	conn.close()
 
@@ -56,33 +54,31 @@ def checkIfFundamentalsExists(symbol:str):
 
 	 
 
-def insertCurrentFundamentalData(symbol:str):
+def insertCurrentFundamentalData(symbol:str, databaseInfo):
 	
 	currentDate = datetime.datetime.today().strftime('%Y-%m-%d')
 	
-	if not checkIfFundamentalsExists(symbol):
+	if not checkIfFundamentalsExists(symbol, databaseInfo):
 		print('Inserting ' + symbol + ' Fundamental Data for ' + currentDate) 
 
 		data1 = pullFundamentals(symbol)
 		
-		database_name = 'tradeBot_DW.db'
-		database = '/Users/kevinbichoupan/projects/tradeBot/Files/'+database_name
-		conn = sqlite3.connect(database)
+		conn = sqlite3.connect(databaseInfo['database_location'])
 		c = conn.cursor()
 
 		try:
-			data1.to_sql('fundamental_data_raw', conn, if_exists = 'append', index = False)
+			data1.to_sql(databaseInfo['fundamental_table'], conn, if_exists = 'append', index = False)
 			print('Data inserted successfully')
 		except:
 			print('Data not inserted successfully')
 
 	else:
-		print('Fundamental data for ' + symbol + ' as of ' + currentDate + ' not inserted successfully')
+		print('Fundamental data for ' + symbol + ' as of ' + currentDate + ' exists')
 
 
 
 if __name__ == '__main__':
 	print('\n\n\n')
-	insertCurrentFundamentalData(str(sys.argv[1]))
+	insertCurrentFundamentalData(str(sys.argv[1]), sys.argv[2])
 	print('\n\n\n')	
 	
